@@ -3,20 +3,26 @@ import ExpenseForm from "./components/ExpenseForm";
 
 function App() {
   const [expenses, setExpenses] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false); 
 
   // this'll load from localStorage
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("expenses")) || [];
     setExpenses(stored);
+    setIsLoaded(true); 
   }, []);
 
-  //this is saving to localStorage
+  // saving ONLY after loading is done
   useEffect(() => {
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-  }, [expenses]);
+    if (isLoaded) {
+      console.log("SAVING:", expenses);
+      localStorage.setItem("expenses", JSON.stringify(expenses));
+    }
+  }, [expenses, isLoaded]);
 
   const addExpense = (expense) => {
-    setExpenses([...expenses, expense]);
+    console.log("NEW EXPENSE:", expense);
+    setExpenses((prev) => [...prev, expense]);
   };
 
   return (
