@@ -5,6 +5,7 @@ function ExpenseForm({ onAddExpense }) {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
   const [note, setNote] = useState("");
+  const [paidBy, setPaidBy] = useState(""); 
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,6 +21,7 @@ function ExpenseForm({ onAddExpense }) {
       category,
       date,
       note,
+      paidBy, 
     };
 
     onAddExpense(expense);
@@ -29,6 +31,7 @@ function ExpenseForm({ onAddExpense }) {
     setCategory("");
     setDate("");
     setNote("");
+    setPaidBy(""); 
   };
 
   return (
@@ -42,10 +45,7 @@ function ExpenseForm({ onAddExpense }) {
         onChange={(e) => setAmount(e.target.value)}
       />
 
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      >
+      <select value={category} onChange={(e) => setCategory(e.target.value)}>
         <option value="">Select Category</option>
         <option value="Food">Food</option>
         <option value="Travel">Travel</option>
@@ -63,6 +63,13 @@ function ExpenseForm({ onAddExpense }) {
         placeholder="Description"
         value={note}
         onChange={(e) => setNote(e.target.value)}
+      />
+
+      <input
+        type="text"
+        placeholder="Paid by (name)"
+        value={paidBy}
+        onChange={(e) => setPaidBy(e.target.value)}
       />
 
       <button type="submit">Add Expense</button>

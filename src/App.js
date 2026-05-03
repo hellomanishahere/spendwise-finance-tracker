@@ -29,6 +29,34 @@ function App() {
     setExpenses((prev) => prev.filter((expense) => expense.id !== id));
   };
 
+  // SPLITWISE logic
+  const calculateBalances = () => {
+    const balances = {};
+
+    expenses.forEach((exp) => {
+      if (!exp.paidBy) return;
+
+      if (!balances[exp.paidBy]) {
+        balances[exp.paidBy] = 0;
+      }
+
+      balances[exp.paidBy] += exp.amount;
+    });
+
+    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const people = Object.keys(balances);
+
+    if (people.length === 0) return {};
+
+    const splitAmount = total / people.length;
+
+    people.forEach((person) => {
+      balances[person] = balances[person] - splitAmount;
+    });
+
+    return balances;
+  };
+
   return (
     <div>
       <h1>SpendWise</h1>
@@ -46,6 +74,19 @@ function App() {
             >
               Delete
             </button>
+          </li>
+        ))}
+      </ul>
+
+      <h2>Splitwise Summary</h2>
+
+      <ul>
+        {Object.entries(calculateBalances()).map(([person, amount]) => (
+          <li key={person}>
+            {person} :{" "}
+            {amount > 0
+              ? `gets ₹${amount.toFixed(2)}`
+              : `owes ₹${Math.abs(amount).toFixed(2)}`}
           </li>
         ))}
       </ul>
