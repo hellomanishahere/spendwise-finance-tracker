@@ -25,6 +25,10 @@ function App() {
     setExpenses((prev) => [...prev, expense]);
   };
 
+  const deleteExpense = (id) => {
+    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+  };
+
   return (
     <div>
       <h1>SpendWise</h1>
@@ -35,6 +39,13 @@ function App() {
         {expenses.map((e) => (
           <li key={e.id}>
             ₹{e.amount} - {e.category} - {e.date}
+
+            <button
+              onClick={() => deleteExpense(e.id)}
+              style={{ marginLeft: "10px", color: "red" }}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
