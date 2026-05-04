@@ -6,6 +6,10 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false); 
   const [editingExpense, setEditingExpense] = useState(null); 
 
+  // GROUPS STATE (ADDED)
+  const [groups, setGroups] = useState(["Trip", "Roommates"]);
+  const [selectedGroup, setSelectedGroup] = useState("Trip");
+
   // this'll load from localStorage
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("expenses")) || [];
@@ -21,9 +25,24 @@ function App() {
     }
   }, [expenses, isLoaded]);
 
+  // group function
+  const addGroup = (groupName) => {
+    if (!groupName) return;
+    if (!groups.includes(groupName)) {
+      setGroups((prev) => [...prev, groupName]);
+    }
+  };
+
   const addExpense = (expense) => {
     console.log("NEW EXPENSE:", expense);
-    setExpenses((prev) => [...prev, expense]);
+
+    // attach group
+    const expenseWithGroup = {
+      ...expense,
+      group: selectedGroup,
+    };
+
+    setExpenses((prev) => [...prev, expenseWithGroup]);
   };
 
   const deleteExpense = (id) => {
@@ -115,6 +134,31 @@ function App() {
     <div>
       <h1>SpendWise</h1>
 
+      {/*  group SELECTOR */}
+      <h2>Select Group</h2>
+      <select
+        value={selectedGroup}
+        onChange={(e) => setSelectedGroup(e.target.value)}
+      >
+        {groups.map((g) => (
+          <option key={g} value={g}>
+            {g}
+          </option>
+        ))}
+      </select>
+
+      {/* group INPUT */}
+      <input
+        type="text"
+        placeholder="New group name"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            addGroup(e.target.value);
+            e.target.value = "";
+          }
+        }}
+      />
+
       <ExpenseForm
         onAddExpense={addExpense}
         editingExpense={editingExpense}
@@ -123,25 +167,27 @@ function App() {
 
       <h2>All Expenses</h2>
       <ul>
-        {expenses.map((e) => (
-          <li key={e.id}>
-            ₹{e.amount} - {e.category} - {e.date}
+        {expenses
+          .filter((e) => e.group === selectedGroup) // FILTER BY GROUP
+          .map((e) => (
+            <li key={e.id}>
+              ₹{e.amount} - {e.category} - {e.date} ({e.group})
 
-            <button
-              onClick={() => deleteExpense(e.id)}
-              style={{ marginLeft: "10px", color: "red" }}
-            >
-              Delete
-            </button>
+              <button
+                onClick={() => deleteExpense(e.id)}
+                style={{ marginLeft: "10px", color: "red" }}
+              >
+                Delete
+              </button>
 
-            <button
-              onClick={() => editExpense(e)}
-              style={{ marginLeft: "10px", color: "blue" }}
-            >
-              Edit
-            </button>
-          </li>
-        ))}
+              <button
+                onClick={() => editExpense(e)}
+                style={{ marginLeft: "10px", color: "blue" }}
+              >
+                Edit
+              </button>
+            </li>
+          ))}
       </ul>
 
       <h2>Splitwise Summary</h2>
