@@ -1,11 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function ExpenseForm({ onAddExpense }) {
+function ExpenseForm({ onAddExpense, editingExpense, updateExpense }) {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
   const [note, setNote] = useState("");
   const [paidBy, setPaidBy] = useState(""); 
+
+  // fill form when editing
+  useEffect(() => {
+    if (editingExpense) {
+      setAmount(editingExpense.amount);
+      setCategory(editingExpense.category);
+      setDate(editingExpense.date);
+      setNote(editingExpense.note);
+      setPaidBy(editingExpense.paidBy);
+    }
+  }, [editingExpense]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,7 +27,7 @@ function ExpenseForm({ onAddExpense }) {
     }
 
     const expense = {
-      id: Date.now(),
+      id: editingExpense ? editingExpense.id : Date.now(),
       amount: Number(amount),
       category,
       date,
@@ -24,7 +35,11 @@ function ExpenseForm({ onAddExpense }) {
       paidBy, 
     };
 
-    onAddExpense(expense);
+    if (editingExpense) {
+      updateExpense(expense);
+    } else {
+      onAddExpense(expense);
+    }
 
     // clear form
     setAmount("");
@@ -36,7 +51,7 @@ function ExpenseForm({ onAddExpense }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Add Expense</h2>
+      <h2>{editingExpense ? "Edit Expense" : "Add Expense"}</h2>
 
       <input
         type="number"
@@ -72,7 +87,9 @@ function ExpenseForm({ onAddExpense }) {
         onChange={(e) => setPaidBy(e.target.value)}
       />
 
-      <button type="submit">Add Expense</button>
+      <button type="submit">
+        {editingExpense ? "Update Expense" : "Add Expense"}
+      </button>
     </form>
   );
 }

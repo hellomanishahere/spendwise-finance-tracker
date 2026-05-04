@@ -4,6 +4,7 @@ import ExpenseForm from "./components/ExpenseForm";
 function App() {
   const [expenses, setExpenses] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false); 
+  const [editingExpense, setEditingExpense] = useState(null); 
 
   // this'll load from localStorage
   useEffect(() => {
@@ -27,6 +28,17 @@ function App() {
 
   const deleteExpense = (id) => {
     setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+  };
+
+  const editExpense = (expense) => {
+    setEditingExpense(expense);
+  };
+
+  const updateExpense = (updated) => {
+    setExpenses((prev) =>
+      prev.map((exp) => (exp.id === updated.id ? updated : exp))
+    );
+    setEditingExpense(null);
   };
 
   // SPLITWISE logic
@@ -102,7 +114,12 @@ function App() {
   return (
     <div>
       <h1>SpendWise</h1>
-      <ExpenseForm onAddExpense={addExpense} />
+
+      <ExpenseForm
+        onAddExpense={addExpense}
+        editingExpense={editingExpense}
+        updateExpense={updateExpense}
+      />
 
       <h2>All Expenses</h2>
       <ul>
@@ -115,6 +132,13 @@ function App() {
               style={{ marginLeft: "10px", color: "red" }}
             >
               Delete
+            </button>
+
+            <button
+              onClick={() => editExpense(e)}
+              style={{ marginLeft: "10px", color: "blue" }}
+            >
+              Edit
             </button>
           </li>
         ))}
