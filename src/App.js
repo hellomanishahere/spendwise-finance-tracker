@@ -148,13 +148,15 @@ function App() {
   };
 
   return (
-    <div>
-      <h1>SpendWise</h1>
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1 style={{ textAlign: "center" }}>SpendWise</h1>
 
+      {/* GROUP SELECT */}
       <h2>Select Group</h2>
       <select
         value={selectedGroup}
         onChange={(e) => setSelectedGroup(e.target.value)}
+        style={{ marginRight: "10px" }}
       >
         {groups.map((g) => (
           <option key={g} value={g}>
@@ -174,58 +176,82 @@ function App() {
         }}
       />
 
-      <ExpenseForm
-        onAddExpense={addExpense}
-        editingExpense={editingExpense}
-        updateExpense={updateExpense}
-        groupMembers={getGroupMembers()} 
-      />
+      {/* LAYOUT */}
+      <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
+        
+        {/* FORM */}
+        <div style={{ flex: 1, border: "1px solid #ddd", padding: "15px", borderRadius: "10px" }}>
+          <ExpenseForm
+            onAddExpense={addExpense}
+            editingExpense={editingExpense}
+            updateExpense={updateExpense}
+            groupMembers={getGroupMembers()} 
+          />
+        </div>
 
-      <h2>All Expenses</h2>
-      <ul>
-        {expenses
-          .filter((e) => e.group === selectedGroup)
-          .map((e) => (
-            <li key={e.id}>
-              ₹{e.amount} - {e.category} - {e.date} ({e.group})
+        {/* RIGHT SIDE */}
+        <div style={{ flex: 2 }}>
 
-              <button
-                onClick={() => deleteExpense(e.id)}
-                style={{ marginLeft: "10px", color: "red" }}
-              >
-                Delete
-              </button>
+          {/* EXPENSES */}
+          <div style={{ border: "1px solid #ddd", padding: "15px", borderRadius: "10px", marginBottom: "20px" }}>
+            <h2>All Expenses</h2>
+            <ul>
+              {expenses
+                .filter((e) => e.group === selectedGroup)
+                .map((e) => (
+                  <li key={e.id}>
+                    ₹{e.amount} - {e.category} - {e.date} ({e.group})
 
-              <button
-                onClick={() => editExpense(e)}
-                style={{ marginLeft: "10px", color: "blue" }}
-              >
-                Edit
-              </button>
-            </li>
-          ))}
-      </ul>
+                    <button
+                      onClick={() => deleteExpense(e.id)}
+                      style={{ marginLeft: "10px", color: "red" }}
+                    >
+                      Delete
+                    </button>
 
-      <h2>Splitwise Summary</h2>
-      <ul>
-        {Object.entries(calculateBalances()).map(([person, amount]) => (
-          <li key={person}>
-            {person} :{" "}
-            {amount > 0
-              ? `gets ₹${amount.toFixed(2)}`
-              : `owes ₹${Math.abs(amount).toFixed(2)}`}
-          </li>
-        ))}
-      </ul>
+                    <button
+                      onClick={() => editExpense(e)}
+                      style={{ marginLeft: "10px", color: "blue" }}
+                    >
+                      Edit
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          </div>
 
-      <h2>Settle Up Transactions</h2>
-      <ul>
-        {getSettlements().map((s, index) => (
-          <li key={index}>
-            {s.from} pays {s.to} ₹{s.amount.toFixed(2)}
-          </li>
-        ))}
-      </ul>
+          {/* SUMMARY */}
+          <div style={{ display: "flex", gap: "20px" }}>
+            
+            <div style={{ flex: 1, border: "1px solid #ddd", padding: "15px", borderRadius: "10px" }}>
+              <h2>Splitwise Summary</h2>
+              <ul>
+                {Object.entries(calculateBalances()).map(([person, amount]) => (
+                  <li key={person}>
+                    {person} :{" "}
+                    {amount > 0
+                      ? `gets ₹${amount.toFixed(2)}`
+                      : `owes ₹${Math.abs(amount).toFixed(2)}`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div style={{ flex: 1, border: "1px solid #ddd", padding: "15px", borderRadius: "10px" }}>
+              <h2>Settle Up Transactions</h2>
+              <ul>
+                {getSettlements().map((s, index) => (
+                  <li key={index}>
+                    {s.from} pays {s.to} ₹{s.amount.toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }
