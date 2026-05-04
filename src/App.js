@@ -10,14 +10,12 @@ function App() {
   const [groups, setGroups] = useState(["Trip", "Roommates"]);
   const [selectedGroup, setSelectedGroup] = useState("Trip");
 
-  // this'll load from localStorage
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("expenses")) || [];
     setExpenses(stored);
     setIsLoaded(true); 
   }, []);
 
-  // saving ONLY after loading is done
   useEffect(() => {
     if (isLoaded) {
       console.log("SAVING:", expenses);
@@ -25,7 +23,6 @@ function App() {
     }
   }, [expenses, isLoaded]);
 
-  // group function
   const addGroup = (groupName) => {
     if (!groupName) return;
     if (!groups.includes(groupName)) {
@@ -34,14 +31,10 @@ function App() {
   };
 
   const addExpense = (expense) => {
-    console.log("NEW EXPENSE:", expense);
-
-    // attach group
     const expenseWithGroup = {
       ...expense,
       group: selectedGroup,
     };
-
     setExpenses((prev) => [...prev, expenseWithGroup]);
   };
 
@@ -53,18 +46,25 @@ function App() {
     setEditingExpense(expense);
   };
 
+  // preserve group while editing
   const updateExpense = (updated) => {
     setExpenses((prev) =>
-      prev.map((exp) => (exp.id === updated.id ? updated : exp))
+      prev.map((exp) =>
+        exp.id === updated.id ? { ...updated, group: exp.group } : exp
+      )
     );
     setEditingExpense(null);
   };
 
-  // SPLITWISE logic
+  // GROUP-SPECIFIC SPLITWISE
   const calculateBalances = () => {
     const balances = {};
 
-    expenses.forEach((exp) => {
+    const filteredExpenses = expenses.filter(
+      (e) => e.group === selectedGroup
+    );
+
+    filteredExpenses.forEach((exp) => {
       if (!exp.paidBy) return;
 
       if (!balances[exp.paidBy]) {
@@ -74,7 +74,7 @@ function App() {
       balances[exp.paidBy] += exp.amount;
     });
 
-    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
     const people = Object.keys(balances);
 
     if (people.length === 0) return {};
@@ -88,7 +88,6 @@ function App() {
     return balances;
   };
 
-  // settle up logic
   const getSettlements = () => {
     const balances = calculateBalances();
 
@@ -134,7 +133,6 @@ function App() {
     <div>
       <h1>SpendWise</h1>
 
-      {/*  group SELECTOR */}
       <h2>Select Group</h2>
       <select
         value={selectedGroup}
@@ -147,7 +145,6 @@ function App() {
         ))}
       </select>
 
-      {/* group INPUT */}
       <input
         type="text"
         placeholder="New group name"
@@ -168,7 +165,7 @@ function App() {
       <h2>All Expenses</h2>
       <ul>
         {expenses
-          .filter((e) => e.group === selectedGroup) // FILTER BY GROUP
+          .filter((e) => e.group === selectedGroup)
           .map((e) => (
             <li key={e.id}>
               ₹{e.amount} - {e.category} - {e.date} ({e.group})
@@ -191,7 +188,6 @@ function App() {
       </ul>
 
       <h2>Splitwise Summary</h2>
-
       <ul>
         {Object.entries(calculateBalances()).map(([person, amount]) => (
           <li key={person}>
@@ -204,7 +200,6 @@ function App() {
       </ul>
 
       <h2>Settle Up Transactions</h2>
-
       <ul>
         {getSettlements().map((s, index) => (
           <li key={index}>
