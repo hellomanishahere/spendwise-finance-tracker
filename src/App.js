@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ExpenseForm from "./components/ExpenseForm";
+import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 
 function App() {
   const [expenses, setExpenses] = useState([]);
@@ -8,6 +9,11 @@ function App() {
 
   const [groups, setGroups] = useState(["Trip", "Roommates"]);
   const [selectedGroup, setSelectedGroup] = useState("Trip");
+
+  /* DARK MODE STATE */
+  const [darkMode, setDarkMode] = useState(
+    JSON.parse(localStorage.getItem("darkMode")) || false
+  );
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("expenses")) || [];
@@ -21,6 +27,11 @@ function App() {
       localStorage.setItem("expenses", JSON.stringify(expenses));
     }
   }, [expenses, isLoaded]);
+
+  /* SAVE DARK MODE */
+  useEffect(() => {
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
 
   const addGroup = (groupName) => {
     if (!groupName) return;
@@ -147,9 +158,51 @@ function App() {
     return settlements;
   };
 
+  /* CATEGORY DATA FOR PIE CHART */
+  const getCategoryData = () => {
+    const data = {};
+    expenses
+      .filter((e) => e.group === selectedGroup)
+      .forEach((e) => {
+        data[e.category] = (data[e.category] || 0) + e.amount;
+      });
+
+    return Object.entries(data).map(([name, value]) => ({ name, value }));
+  };
+
+  /* BALANCE DATA FOR BAR CHART */
+  const getBalanceData = () => {
+    const balances = calculateBalances();
+    return Object.entries(balances).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  };
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+  /* THEME STYLES */
+  const themeStyles = {
+    backgroundColor: darkMode ? "#121212" : "#ffffff",
+    color: darkMode ? "#ffffff" : "#000000",
+    minHeight: "100vh",
+  };
+
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+    <div style={{ padding: "20px", fontFamily: "Arial", ...themeStyles }}>
       <h1 style={{ textAlign: "center" }}>SpendWise</h1>
+
+      {/* DARK MODE BUTTON */}
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        style={{
+          marginBottom: "20px",
+          padding: "8px 12px",
+          cursor: "pointer",
+        }}
+      >
+        {darkMode ? "☀️" : "🌙"}
+      </button>
 
       {/* GROUP SELECT */}
       <h2>Select Group</h2>
@@ -218,6 +271,35 @@ function App() {
                   </li>
                 ))}
             </ul>
+          </div>
+
+          {/* CHARTS */}
+          <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+            
+            <div style={{ flex: 1 }}>
+              <h3>Category Split</h3>
+              <PieChart width={300} height={250}>
+                <Pie data={getCategoryData()} dataKey="value" nameKey="name" outerRadius={80}>
+                  {getCategoryData().map((entry, index) => (
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <h3>Balances</h3>
+              <BarChart width={300} height={250} data={getBalanceData()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" />
+              </BarChart>
+            </div>
+
           </div>
 
           {/* SUMMARY */}
