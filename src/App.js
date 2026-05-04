@@ -54,6 +54,22 @@ function App() {
     setEditingExpense(null);
   };
 
+  // AUTO GROUP MEMBERS 
+  const getGroupMembers = () => {
+    const members = new Set();
+
+    expenses
+      .filter((e) => e.group === selectedGroup)
+      .forEach((e) => {
+        if (e.paidBy) members.add(e.paidBy);
+        if (e.splitWith) {
+          e.splitWith.forEach((p) => members.add(p));
+        }
+      });
+
+    return Array.from(members);
+  };
+
   // SPLIT LOGIC
   const calculateBalances = () => {
     const balances = {};
@@ -63,17 +79,24 @@ function App() {
     );
 
     filteredExpenses.forEach((exp) => {
-      const { paidBy, amount, splitWith } = exp;
+      const { paidBy, amount, splitWith, splitAmounts } = exp;
 
       if (!paidBy || !splitWith || splitWith.length === 0) return;
 
-      const share = amount / splitWith.length;
+      // UNEQUAL SPLIT SUPPORT
+      if (splitAmounts && Object.keys(splitAmounts).length > 0) {
+        Object.entries(splitAmounts).forEach(([person, val]) => {
+          if (!balances[person]) balances[person] = 0;
+          balances[person] -= Number(val);
+        });
+      } else {
+        const share = amount / splitWith.length;
 
-      // each person owes their share
-      splitWith.forEach((person) => {
-        if (!balances[person]) balances[person] = 0;
-        balances[person] -= share;
-      });
+        splitWith.forEach((person) => {
+          if (!balances[person]) balances[person] = 0;
+          balances[person] -= share;
+        });
+      }
 
       // payer gets full amount
       if (!balances[paidBy]) balances[paidBy] = 0;
@@ -155,6 +178,7 @@ function App() {
         onAddExpense={addExpense}
         editingExpense={editingExpense}
         updateExpense={updateExpense}
+        groupMembers={getGroupMembers()} 
       />
 
       <h2>All Expenses</h2>
