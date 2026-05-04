@@ -5,7 +5,8 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense }) {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
   const [note, setNote] = useState("");
-  const [paidBy, setPaidBy] = useState(""); 
+  const [paidBy, setPaidBy] = useState("");
+  const [splitWith, setSplitWith] = useState(""); 
 
   // fill form when editing
   useEffect(() => {
@@ -15,16 +16,23 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense }) {
       setDate(editingExpense.date);
       setNote(editingExpense.note);
       setPaidBy(editingExpense.paidBy);
+      setSplitWith(editingExpense.splitWith?.join(", ") || ""); 
     }
   }, [editingExpense]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!amount || !category || !date) {
+    if (!amount || !category || !date || !paidBy) {
       alert("Please fill all required fields");
       return;
     }
+
+    // convert comma separated names into array
+    const people = splitWith
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p) => p);
 
     const expense = {
       id: editingExpense ? editingExpense.id : Date.now(),
@@ -32,7 +40,8 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense }) {
       category,
       date,
       note,
-      paidBy, 
+      paidBy,
+      splitWith: people, 
     };
 
     if (editingExpense) {
@@ -46,7 +55,8 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense }) {
     setCategory("");
     setDate("");
     setNote("");
-    setPaidBy(""); 
+    setPaidBy("");
+    setSplitWith(""); 
   };
 
   return (
@@ -85,6 +95,13 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense }) {
         placeholder="Paid by (name)"
         value={paidBy}
         onChange={(e) => setPaidBy(e.target.value)}
+      />
+
+      <input
+        type="text"
+        placeholder="Split between (comma separated names)"
+        value={splitWith}
+        onChange={(e) => setSplitWith(e.target.value)}
       />
 
       <button type="submit">

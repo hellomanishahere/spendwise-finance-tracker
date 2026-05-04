@@ -6,7 +6,6 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false); 
   const [editingExpense, setEditingExpense] = useState(null); 
 
-  // GROUPS STATE (ADDED)
   const [groups, setGroups] = useState(["Trip", "Roommates"]);
   const [selectedGroup, setSelectedGroup] = useState("Trip");
 
@@ -46,7 +45,6 @@ function App() {
     setEditingExpense(expense);
   };
 
-  // preserve group while editing
   const updateExpense = (updated) => {
     setExpenses((prev) =>
       prev.map((exp) =>
@@ -56,7 +54,7 @@ function App() {
     setEditingExpense(null);
   };
 
-  // GROUP-SPECIFIC SPLITWISE
+  // SPLIT LOGIC
   const calculateBalances = () => {
     const balances = {};
 
@@ -65,24 +63,21 @@ function App() {
     );
 
     filteredExpenses.forEach((exp) => {
-      if (!exp.paidBy) return;
+      const { paidBy, amount, splitWith } = exp;
 
-      if (!balances[exp.paidBy]) {
-        balances[exp.paidBy] = 0;
-      }
+      if (!paidBy || !splitWith || splitWith.length === 0) return;
 
-      balances[exp.paidBy] += exp.amount;
-    });
+      const share = amount / splitWith.length;
 
-    const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const people = Object.keys(balances);
+      // each person owes their share
+      splitWith.forEach((person) => {
+        if (!balances[person]) balances[person] = 0;
+        balances[person] -= share;
+      });
 
-    if (people.length === 0) return {};
-
-    const splitAmount = total / people.length;
-
-    people.forEach((person) => {
-      balances[person] = balances[person] - splitAmount;
+      // payer gets full amount
+      if (!balances[paidBy]) balances[paidBy] = 0;
+      balances[paidBy] += amount;
     });
 
     return balances;
