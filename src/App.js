@@ -181,6 +181,22 @@ function App() {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
+  /* UI POLISH STYLES */
+  const cardStyle = {
+    border: "1px solid #ddd",
+    padding: "15px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    background: darkMode ? "#2a2a2a" : "#fff",
+  };
+
+  const buttonStyle = {
+    padding: "5px 10px",
+    borderRadius: "6px",
+    border: "none",
+    cursor: "pointer",
+  };
+
   /* THEME STYLES */
   const themeStyles = {
     backgroundColor: darkMode ? "#121212" : "#ffffff",
@@ -190,7 +206,7 @@ function App() {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial", ...themeStyles }}>
-      <h1 style={{ textAlign: "center" }}>SpendWise</h1>
+      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>SpendWise</h1>
 
       {/* DARK MODE BUTTON */}
       <button
@@ -233,7 +249,7 @@ function App() {
       <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
         
         {/* FORM */}
-        <div style={{ flex: 1, border: "1px solid #ddd", padding: "15px", borderRadius: "10px" }}>
+        <div style={{ flex: 1, ...cardStyle }}>
           <ExpenseForm
             onAddExpense={addExpense}
             editingExpense={editingExpense}
@@ -246,25 +262,25 @@ function App() {
         <div style={{ flex: 2 }}>
 
           {/* EXPENSES */}
-          <div style={{ border: "1px solid #ddd", padding: "15px", borderRadius: "10px", marginBottom: "20px" }}>
+          <div style={{ ...cardStyle, marginBottom: "20px" }}>
             <h2>All Expenses</h2>
             <ul>
               {expenses
                 .filter((e) => e.group === selectedGroup)
                 .map((e) => (
-                  <li key={e.id}>
+                  <li key={e.id} style={{ marginBottom: "8px" }}>
                     ₹{e.amount} - {e.category} - {e.date} ({e.group})
 
                     <button
                       onClick={() => deleteExpense(e.id)}
-                      style={{ marginLeft: "10px", color: "red" }}
+                      style={{ ...buttonStyle, marginLeft: "10px", background: "#ff4d4d", color: "#fff" }}
                     >
                       Delete
                     </button>
 
                     <button
                       onClick={() => editExpense(e)}
-                      style={{ marginLeft: "10px", color: "blue" }}
+                      style={{ ...buttonStyle, marginLeft: "10px", background: "#4da6ff", color: "#fff" }}
                     >
                       Edit
                     </button>
@@ -276,7 +292,7 @@ function App() {
           {/* CHARTS */}
           <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
             
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, ...cardStyle }}>
               <h3>Category Split</h3>
               <PieChart width={300} height={250}>
                 <Pie data={getCategoryData()} dataKey="value" nameKey="name" outerRadius={80}>
@@ -288,7 +304,7 @@ function App() {
               </PieChart>
             </div>
 
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, ...cardStyle }}>
               <h3>Balances</h3>
               <BarChart width={300} height={250} data={getBalanceData()}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -305,7 +321,7 @@ function App() {
           {/* SUMMARY */}
           <div style={{ display: "flex", gap: "20px" }}>
             
-            <div style={{ flex: 1, border: "1px solid #ddd", padding: "15px", borderRadius: "10px" }}>
+            <div style={{ flex: 1, ...cardStyle }}>
               <h2>Splitwise Summary</h2>
               <ul>
                 {Object.entries(calculateBalances()).map(([person, amount]) => (
@@ -319,7 +335,7 @@ function App() {
               </ul>
             </div>
 
-            <div style={{ flex: 1, border: "1px solid #ddd", padding: "15px", borderRadius: "10px" }}>
+            <div style={{ flex: 1, ...cardStyle }}>
               <h2>Settle Up Transactions</h2>
               <ul>
                 {getSettlements().map((s, index) => (
