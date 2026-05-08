@@ -73,66 +73,96 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{editingExpense ? "Edit Expense" : "Add Expense"}</h2>
+      <h2 className="card-title">{editingExpense ? "Edit Expense" : "Add Expense"}</h2>
 
-      <input
-        type="number"
-        placeholder="Amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
+      <div className="form-group">
+        <label className="form-label">Amount</label>
+        <input
+          type="number"
+          className="form-control"
+          placeholder="₹ Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
 
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="">Select Category</option>
-        <option value="Food">Food</option>
-        <option value="Travel">Travel</option>
-        <option value="Shopping">Shopping</option>
-      </select>
+      <div className="form-group">
+        <label className="form-label">Category</label>
+        <select 
+          className="form-control"
+          value={category} 
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">Select Category</option>
+          <option value="Food">Food</option>
+          <option value="Travel">Travel</option>
+          <option value="Shopping">Shopping</option>
+        </select>
+      </div>
 
-      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <div className="form-group">
+        <label className="form-label">Date</label>
+        <input 
+          type="date" 
+          className="form-control"
+          value={date} 
+          onChange={(e) => setDate(e.target.value)} 
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="Description"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
+      <div className="form-group">
+        <label className="form-label">Description</label>
+        <input
+          type="text"
+          className="form-control"
+          placeholder="What was this for?"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="Paid by (name)"
-        value={paidBy}
-        onChange={(e) => setPaidBy(e.target.value)}
-      />
+      <div className="form-group">
+        <label className="form-label">Paid by</label>
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Name of payer"
+          value={paidBy}
+          onChange={(e) => setPaidBy(e.target.value)}
+        />
+      </div>
 
       {/* CHECKBOX UI */}
-      <h4>Split Between</h4>
-      {groupMembers.map((person) => (
-        <div key={person}>
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedPeople.includes(person)}
-              onChange={() => togglePerson(person)}
-            />
-            {person}
-          </label>
+      <div className="split-section">
+        <label className="form-label" style={{ marginBottom: "12px" }}>Split Between</label>
+        {groupMembers.map((person) => (
+          <div key={person} className="split-person">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={selectedPeople.includes(person)}
+                onChange={() => togglePerson(person)}
+              />
+              {person}
+            </label>
 
-          {/* UNEQUAL INPUT */}
-          {selectedPeople.includes(person) && (
-            <input
-              type="number"
-              placeholder="₹"
-              value={splitAmounts[person] || ""}
-              onChange={(e) =>
-                handleAmountChange(person, e.target.value)
-              }
-            />
-          )}
-        </div>
-      ))}
+            {/* UNEQUAL INPUT */}
+            {selectedPeople.includes(person) && (
+              <input
+                type="number"
+                className="form-control split-amount-input"
+                placeholder="₹"
+                value={splitAmounts[person] || ""}
+                onChange={(e) =>
+                  handleAmountChange(person, e.target.value)
+                }
+              />
+            )}
+          </div>
+        ))}
+      </div>
 
-      <button type="submit">
+      <button type="submit" className="btn btn-primary">
         {editingExpense ? "Update Expense" : "Add Expense"}
       </button>
     </form>
