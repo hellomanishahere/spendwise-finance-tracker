@@ -336,3 +336,67 @@
   font-weight: 700;
   color: var(--text-main);
 }
+
+/* MOBILE RESPONSIVENESS */
+
+@media (max-width: 768px) {
+
+  .dashboard-container {
+    padding: 14px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .group-selector {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .expense-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .expense-actions {
+    width: 100%;
+    display: flex;
+  }
+
+  .expense-actions button {
+    flex: 1;
+  }
+
+  .split-person {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .split-amount-input {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
