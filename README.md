@@ -1,57 +1,68 @@
 # spendwise-finance-tracker
 
-SpendWise is a React-based frontend application designed to help users manage both **personal expenses** and **shared group expenses** in one place.  
+SpendWise is a React-based expense management application designed to help users manage both personal expenses and shared group expenses in one place.
 
-The application allows users to track their daily spending, analyze financial habits, and efficiently split expenses among multiple users. It focuses on providing meaningful insights and simplifying financial management through an intuitive and interactive interface.
-
-## Features
-
-### Personal Finance Tracker
-- Add, edit, and delete expenses  
-- Categorize expenses (Food, Travel, Shopping, etc.)  
-- Monthly spending summary  
-- Budget tracking with alerts  
+The application allows users to track expenses, create groups, split bills among members, and visualize spending patterns through interactive charts.
 
 ---
 
-### Expense Splitter
-- Create groups (Trips, Roommates, Events)  
-- Add members to groups  
-- Record shared expenses  
-- Automatic calculation of **who owes whom**  
-- Simplified settlement view  
+## Features
+
+### Expense Management
+- Add expenses with amount, category, date, and description
+- Edit existing expenses
+- Delete expenses
+- Categorize expenses (Food, Travel, Shopping, etc.)
+
+---
+
+### Group Expense Splitting
+- Create multiple groups (Trips, Roommates, Events)
+- Add shared expenses
+- Automatic balance calculation
+- Simplified “who owes whom” settlement logic
+- Unequal split support
 
 ---
 
 ### Insights & Analytics
-- Monthly expense breakdown  
-- Category-wise spending analysis  
-- Budget usage indicators  
-- Basic financial insights (e.g., overspending alerts)  
+- Pie chart for category-wise spending
+- Bar chart for balance visualization
+- Splitwise-style summary section
+
+---
+
+### UI Features
+- Clean dashboard-style interface
+- Dark mode toggle
+- Card-based layout
+- Persistent UI state using localStorage
 
 ---
 
 ### Data Persistence
-- Stores all data using browser **localStorage**  
-- No backend required  
+- Stores all data using browser localStorage
+- No backend required
 
 ---
 
 ## Tech Stack
-- **React.js**
-- **JavaScript (ES6+)**
-- **HTML5**
-- **Tailwind CSS**
-- **localStorage (for data persistence)**
+- React.js
+- JavaScript (ES6+)
+- HTML5
+- CSS
+- Recharts
+- localStorage
 
 ---
 
 ## Objective
-The goal of this project is to build a **fully functional frontend finance management system** that demonstrates strong understanding of:
-- State management in React  
-- Component-based architecture  
-- Problem-solving (expense splitting logic)  
-- UI/UX design  
+The goal of this project is to build a frontend finance management system that demonstrates:
+- React state management
+- Component-based architecture
+- Expense splitting algorithms
+- Interactive dashboard UI
+- Data visualization using charts
 
 ---
 
