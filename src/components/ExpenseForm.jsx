@@ -9,7 +9,7 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers
   const [selectedPeople, setSelectedPeople] = useState([]);
   const [splitAmounts, setSplitAmounts] = useState({}); // unequal split
 
-  // fill form when editing
+  // while editing fill form logic
   useEffect(() => {
     if (editingExpense) {
       setAmount(editingExpense.amount);
@@ -132,7 +132,7 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers
         />
       </div>
 
-      {/* CHECKBOX UI */}
+      {/* checkbox ui */}
       <div className="split-section">
         <label className="form-label" style={{ marginBottom: "12px" }}>Split Between</label>
         {groupMembers.map((person) => (
@@ -146,7 +146,7 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers
               {person}
             </label>
 
-            {/* UNEQUAL INPUT */}
+            {/* unequal input */}
             {selectedPeople.includes(person) && (
               <input
                 type="number"
