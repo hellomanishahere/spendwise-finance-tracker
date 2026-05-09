@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./ExpenseForm.css";
 
 function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers }) {
   const [amount, setAmount] = useState("");
@@ -8,8 +9,6 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers
   const [paidBy, setPaidBy] = useState("");
   const [selectedPeople, setSelectedPeople] = useState([]);
   const [splitAmounts, setSplitAmounts] = useState({}); // unequal split
-
-  // fill form when editing
   useEffect(() => {
     if (editingExpense) {
       setAmount(editingExpense.amount);
@@ -72,68 +71,104 @@ function ExpenseForm({ onAddExpense, editingExpense, updateExpense, groupMembers
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="expense-form">
       <h2>{editingExpense ? "Edit Expense" : "Add Expense"}</h2>
 
-      <input
-        type="number"
-        placeholder="Amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="">Select Category</option>
-        <option value="Food">Food</option>
-        <option value="Travel">Travel</option>
-        <option value="Shopping">Shopping</option>
-      </select>
-
-      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-
-      <input
-        type="text"
-        placeholder="Description"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
-
-      <input
-        type="text"
-        placeholder="Paid by (name)"
-        value={paidBy}
-        onChange={(e) => setPaidBy(e.target.value)}
-      />
-
-      {/* CHECKBOX UI */}
-      <h4>Split Between</h4>
-      {groupMembers.map((person) => (
-        <div key={person}>
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedPeople.includes(person)}
-              onChange={() => togglePerson(person)}
-            />
-            {person}
-          </label>
-
-          {/* UNEQUAL INPUT */}
-          {selectedPeople.includes(person) && (
-            <input
-              type="number"
-              placeholder="₹"
-              value={splitAmounts[person] || ""}
-              onChange={(e) =>
-                handleAmountChange(person, e.target.value)
-              }
-            />
-          )}
+      <div className="form-row">
+        <div className="form-group">
+          <label>Amount (₹)</label>
+          <input
+            type="number"
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
         </div>
-      ))}
+        <div className="form-group">
+          <label>Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+      </div>
 
-      <button type="submit">
-        {editingExpense ? "Update Expense" : "Add Expense"}
+      <div className="form-row">
+        <div className="form-group">
+          <label>Category</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">Select category</option>
+            <option value="Food">🍔 Food</option>
+            <option value="Travel">✈️ Travel</option>
+            <option value="Shopping">🛍️ Shopping</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Bills">🧾 Bills</option>
+            <option value="Others">📦 Others</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Paid By</label>
+          <input
+            type="text"
+            placeholder="Name"
+            value={paidBy}
+            onChange={(e) => setPaidBy(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="divider" />
+
+      <div>
+        <div className="split-label">Split Between</div>
+        {groupMembers.length === 0 ? (
+          <p className="empty-members">Add an expense first to see members here.</p>
+        ) : (
+          <div className="members-grid">
+            {groupMembers.map((person) => (
+              <div
+                key={person}
+                className={`member-chip ${selectedPeople.includes(person) ? "selected" : ""}`}
+                onClick={() => togglePerson(person)}
+              >
+                {person}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selectedPeople.length > 0 && (
+        <div>
+          <div className="split-label" style={{ marginBottom: "6px" }}>Custom Split Amounts</div>
+          {selectedPeople.map((person) => (
+            <div key={person} className="member-split-row">
+              <span>{person}</span>
+              <input
+                type="number"
+                placeholder="₹"
+                value={splitAmounts[person] || ""}
+                onChange={(e) => handleAmountChange(person, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="divider" />
+
+      <div className="form-group">
+        <label>Notes</label>
+        <textarea
+          placeholder="Optional description..."
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
+
+      <button type="submit" className="submit-btn">
+        {editingExpense ? "✏️ Update Expense" : "➕ Add Expense"}
       </button>
     </form>
   );

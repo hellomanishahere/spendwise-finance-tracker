@@ -1,36 +1,35 @@
-import { useState, useEffect } from "react";
-import ExpenseForm from "./components/ExpenseForm";
-import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { useState, useEffect } from 'react';
+import Header from './components/Header';
+import ExpenseForm from './components/ExpenseForm';
+import ExpenseList from './components/ExpenseList';
+import CategorySplit from './components/CategorySplit/CategorySplit';
+import BalanceChart from './components/BalanceChart';
+import SplitSummary from './components/SplitSummary';
 
 function App() {
   const [expenses, setExpenses] = useState([]);
-  const [isLoaded, setIsLoaded] = useState(false); 
-  const [editingExpense, setEditingExpense] = useState(null); 
-
-  const [groups, setGroups] = useState(["Trip", "Roommates"]);
-  const [selectedGroup, setSelectedGroup] = useState("Trip");
-
-  /* DARK MODE STATE */
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [groups, setGroups] = useState(['Trip', 'Roommates']);
+  const [selectedGroup, setSelectedGroup] = useState('Trip');
   const [darkMode, setDarkMode] = useState(
-    JSON.parse(localStorage.getItem("darkMode")) || false
+    JSON.parse(localStorage.getItem('darkMode')) || false
   );
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("expenses")) || [];
+    const stored = JSON.parse(localStorage.getItem('expenses')) || [];
     setExpenses(stored);
-    setIsLoaded(true); 
+    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
     if (isLoaded) {
-      console.log("SAVING:", expenses);
-      localStorage.setItem("expenses", JSON.stringify(expenses));
+      localStorage.setItem('expenses', JSON.stringify(expenses));
     }
   }, [expenses, isLoaded]);
 
-  /* SAVE DARK MODE */
   useEffect(() => {
-    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
   const addGroup = (groupName) => {
@@ -41,15 +40,11 @@ function App() {
   };
 
   const addExpense = (expense) => {
-    const expenseWithGroup = {
-      ...expense,
-      group: selectedGroup,
-    };
-    setExpenses((prev) => [...prev, expenseWithGroup]);
+    setExpenses((prev) => [...prev, { ...expense, group: selectedGroup }]);
   };
 
   const deleteExpense = (id) => {
-    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
   };
 
   const editExpense = (expense) => {
@@ -58,99 +53,70 @@ function App() {
 
   const updateExpense = (updated) => {
     setExpenses((prev) =>
-      prev.map((exp) =>
-        exp.id === updated.id ? { ...updated, group: exp.group } : exp
-      )
+      prev.map((exp) => (exp.id === updated.id ? { ...updated, group: exp.group } : exp))
     );
     setEditingExpense(null);
   };
 
-  // AUTO GROUP MEMBERS 
   const getGroupMembers = () => {
     const members = new Set();
-
     expenses
       .filter((e) => e.group === selectedGroup)
       .forEach((e) => {
         if (e.paidBy) members.add(e.paidBy);
-        if (e.splitWith) {
-          e.splitWith.forEach((p) => members.add(p));
-        }
+        if (e.splitWith) e.splitWith.forEach((p) => members.add(p));
       });
-
     return Array.from(members);
   };
 
-  // SPLIT LOGIC
   const calculateBalances = () => {
     const balances = {};
+    expenses
+      .filter((e) => e.group === selectedGroup)
+      .forEach((exp) => {
+        const { paidBy, amount, splitWith, splitAmounts } = exp;
+        if (!paidBy || !splitWith || splitWith.length === 0) return;
 
-    const filteredExpenses = expenses.filter(
-      (e) => e.group === selectedGroup
-    );
+        if (splitAmounts && Object.keys(splitAmounts).length > 0) {
+          Object.entries(splitAmounts).forEach(([person, val]) => {
+            if (!balances[person]) balances[person] = 0;
+            balances[person] -= Number(val);
+          });
+        } else {
+          const share = amount / splitWith.length;
+          splitWith.forEach((person) => {
+            if (!balances[person]) balances[person] = 0;
+            balances[person] -= share;
+          });
+        }
 
-    filteredExpenses.forEach((exp) => {
-      const { paidBy, amount, splitWith, splitAmounts } = exp;
-
-      if (!paidBy || !splitWith || splitWith.length === 0) return;
-
-      // UNEQUAL SPLIT SUPPORT
-      if (splitAmounts && Object.keys(splitAmounts).length > 0) {
-        Object.entries(splitAmounts).forEach(([person, val]) => {
-          if (!balances[person]) balances[person] = 0;
-          balances[person] -= Number(val);
-        });
-      } else {
-        const share = amount / splitWith.length;
-
-        splitWith.forEach((person) => {
-          if (!balances[person]) balances[person] = 0;
-          balances[person] -= share;
-        });
-      }
-
-      // payer gets full amount
-      if (!balances[paidBy]) balances[paidBy] = 0;
-      balances[paidBy] += amount;
-    });
-
+        if (!balances[paidBy]) balances[paidBy] = 0;
+        balances[paidBy] += amount;
+      });
     return balances;
   };
 
   const getSettlements = () => {
     const balances = calculateBalances();
-
     const creditors = [];
     const debtors = [];
 
     Object.entries(balances).forEach(([person, amount]) => {
-      if (amount > 0) {
-        creditors.push({ person, amount });
-      } else if (amount < 0) {
-        debtors.push({ person, amount: Math.abs(amount) });
-      }
+      if (amount > 0) creditors.push({ person, amount });
+      else if (amount < 0) debtors.push({ person, amount: Math.abs(amount) });
     });
 
     const settlements = [];
-
     let i = 0;
     let j = 0;
 
     while (i < debtors.length && j < creditors.length) {
       const debtor = debtors[i];
       const creditor = creditors[j];
-
       const min = Math.min(debtor.amount, creditor.amount);
-
-      settlements.push({
-        from: debtor.person,
-        to: creditor.person,
-        amount: min,
-      });
-
+      settlements.push({ from: debtor.person, to: creditor.person, amount: min });
       debtor.amount -= min;
       creditor.amount -= min;
-
       if (debtor.amount === 0) i++;
       if (creditor.amount === 0) j++;
     }
@@ -158,196 +124,69 @@ function App() {
     return settlements;
   };
 
-  /* CATEGORY DATA FOR PIE CHART */
-  const getCategoryData = () => {
-    const data = {};
-    expenses
-      .filter((e) => e.group === selectedGroup)
-      .forEach((e) => {
-        data[e.category] = (data[e.category] || 0) + e.amount;
-      });
-
-    return Object.entries(data).map(([name, value]) => ({ name, value }));
-  };
-
-  /* BALANCE DATA FOR BAR CHART */
   const getBalanceData = () => {
     const balances = calculateBalances();
-    return Object.entries(balances).map(([name, value]) => ({
-      name,
-      value,
-    }));
+    return Object.entries(balances).map(([name, value]) => ({ name, value }));
   };
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
-  /* UI POLISH STYLES */
   const cardStyle = {
-    border: "1px solid #ddd",
-    padding: "15px",
-    borderRadius: "12px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    background: darkMode ? "#2a2a2a" : "#fff",
+    border: '1px solid #ddd',
+    padding: '15px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    background: darkMode ? '#2a2a2a' : '#fff',
   };
 
-  const buttonStyle = {
-    padding: "5px 10px",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-  };
-
-  /* THEME STYLES */
   const themeStyles = {
-    backgroundColor: darkMode ? "#121212" : "#ffffff",
-    color: darkMode ? "#ffffff" : "#000000",
-    minHeight: "100vh",
+    backgroundColor: darkMode ? '#121212' : '#ffffff',
+    color: darkMode ? '#ffffff' : '#000000',
+    minHeight: '100vh',
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial", ...themeStyles }}>
-      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>SpendWise</h1>
-
-      {/* DARK MODE BUTTON */}
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-        style={{
-          marginBottom: "20px",
-          padding: "8px 12px",
-          cursor: "pointer",
-        }}
-      >
-        {darkMode ? "☀️" : "🌙"}
-      </button>
-
-      {/* GROUP SELECT */}
-      <h2>Select Group</h2>
-      <select
-        value={selectedGroup}
-        onChange={(e) => setSelectedGroup(e.target.value)}
-        style={{ marginRight: "10px" }}
-      >
-        {groups.map((g) => (
-          <option key={g} value={g}>
-            {g}
-          </option>
-        ))}
-      </select>
-
-      <input
-        type="text"
-        placeholder="New group name"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            addGroup(e.target.value);
-            e.target.value = "";
-          }
-        }}
+    <div style={{ padding: '20px', fontFamily: 'Arial', ...themeStyles }}>
+      <Header
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        groups={groups}
+        selectedGroup={selectedGroup}
+        setSelectedGroup={setSelectedGroup}
+        addGroup={addGroup}
       />
 
-      {/* LAYOUT */}
-      <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-        
-        {/* FORM */}
+      <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
         <div style={{ flex: 1, ...cardStyle }}>
           <ExpenseForm
             onAddExpense={addExpense}
             editingExpense={editingExpense}
             updateExpense={updateExpense}
-            groupMembers={getGroupMembers()} 
+            groupMembers={getGroupMembers()}
           />
         </div>
 
-        {/* RIGHT SIDE */}
         <div style={{ flex: 2 }}>
+          <ExpenseList
+            expenses={expenses}
+            selectedGroup={selectedGroup}
+            darkMode={darkMode}
+            onDelete={deleteExpense}
+            onEdit={editExpense}
+          />
 
-          {/* EXPENSES */}
-          <div style={{ ...cardStyle, marginBottom: "20px" }}>
-            <h2>All Expenses</h2>
-            <ul>
-              {expenses
-                .filter((e) => e.group === selectedGroup)
-                .map((e) => (
-                  <li key={e.id} style={{ marginBottom: "8px" }}>
-                    ₹{e.amount} - {e.category} - {e.date} ({e.group})
-
-                    <button
-                      onClick={() => deleteExpense(e.id)}
-                      style={{ ...buttonStyle, marginLeft: "10px", background: "#ff4d4d", color: "#fff" }}
-                    >
-                      Delete
-                    </button>
-
-                    <button
-                      onClick={() => editExpense(e)}
-                      style={{ ...buttonStyle, marginLeft: "10px", background: "#4da6ff", color: "#fff" }}
-                    >
-                      Edit
-                    </button>
-                  </li>
-                ))}
-            </ul>
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <CategorySplit
+              expenses={expenses}
+              selectedGroup={selectedGroup}
+              darkMode={darkMode}
+            />
+            <BalanceChart balances={getBalanceData()} darkMode={darkMode} />
           </div>
 
-          {/* CHARTS */}
-          <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-            
-            <div style={{ flex: 1, ...cardStyle }}>
-              <h3>Category Split</h3>
-              <PieChart width={300} height={250}>
-                <Pie data={getCategoryData()} dataKey="value" nameKey="name" outerRadius={80}>
-                  {getCategoryData().map((entry, index) => (
-                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </div>
-
-            <div style={{ flex: 1, ...cardStyle }}>
-              <h3>Balances</h3>
-              <BarChart width={300} height={250} data={getBalanceData()}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" />
-              </BarChart>
-            </div>
-
-          </div>
-
-          {/* SUMMARY */}
-          <div style={{ display: "flex", gap: "20px" }}>
-            
-            <div style={{ flex: 1, ...cardStyle }}>
-              <h2>Splitwise Summary</h2>
-              <ul>
-                {Object.entries(calculateBalances()).map(([person, amount]) => (
-                  <li key={person}>
-                    {person} :{" "}
-                    {amount > 0
-                      ? `gets ₹${amount.toFixed(2)}`
-                      : `owes ₹${Math.abs(amount).toFixed(2)}`}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div style={{ flex: 1, ...cardStyle }}>
-              <h2>Settle Up Transactions</h2>
-              <ul>
-                {getSettlements().map((s, index) => (
-                  <li key={index}>
-                    {s.from} pays {s.to} ₹{s.amount.toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-          </div>
-
+          <SplitSummary
+            balances={calculateBalances()}
+            settlements={getSettlements()}
+            darkMode={darkMode}
+          />
         </div>
       </div>
     </div>
